@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>КПТ Воркбук - Управление ревностью</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#ec4899',
+                        accent: '#f59e0b',
+                        calm: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569'
+                        },
+                        pastel: {
+                            pink: '#fdf2f8',
+                            blue: '#eff6ff',
+                            green: '#f0fdf4',
+                            yellow: '#fffbeb',
+                            purple: '#faf5ff',
+                            orange: '#fff7ed'
+                        }
+                    },
+                    borderRadius: {
+                        'xl': '1rem',
+                        '2xl': '1.5rem'
+                    },
+                    boxShadow: {
+                        'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #fdf2f8 0%, #eff6ff 50%, #f0fdf4 100%);
+            min-height: 100vh;
+        }
+        .breathing-circle {
+            animation: breathe 4s ease-in-out infinite;
+        }
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+        .note-style {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 2px solid #e2e8f0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        .sticky-note {
+            position: relative;
+            transform: rotate(-1deg);
+            transition: transform 0.3s ease;
+        }
+        .sticky-note:hover {
+            transform: rotate(0deg) scale(1.02);
+        }
+        .worksheet-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 3px solid;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .worksheet-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--tw-border-opacity) 0%, transparent 100%);
+        }
+    </style>
+</head>
+<body class="text-gray-900 dark:text-white">
+    <div class="container mx-auto px-4 py-6 max-w-6xl">
+        <!-- Header -->
+        <div class="text-center mb-10">
+            <div class="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-primary to-secondary rounded-2xl mb-6 shadow-soft">
+                <i class="fas fa-brain text-white text-4xl"></i>
+            </div>
+            <h1 class="text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-4">КПТ Воркбук</h1>
+            <p class="text-xl text-calm-500 mb-4">Интерактивные упражнения при ревности</p>
+            <div class="inline-flex items-center px-6 py-3 bg-pastel-green border-2 border-green-200 rounded-full text-sm text-green-700 font-medium">
+                <i class="fas fa-shield-alt mr-2"></i>
+                Научно обоснованные методы КПТ
+            </div>
+        </div>
+
+        <!-- Emergency Mode -->
+        <div id="emergencyMode" class="hidden mb-8">
+            <div class="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 rounded-2xl p-8 shadow-soft">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-exclamation-triangle text-white text-2xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-red-700">🚨 Экстренная помощь</h2>
+                </div>
+                <p class="text-red-700 mb-6 text-lg">Сильный приступ ревности? Выполним дыхательное упражнение:</p>
+
+                <div id="breathingExercise" class="text-center">
+                    <div class="breathing-circle w-40 h-40 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg">
+                        <span class="text-white font-bold text-2xl" id="breatheText">Вдох</span>
+                    </div>
+                    <p class="text-gray-700 text-lg mb-6">Следуйте за кругом: вдох 4 секунды, выдох 4 секунды</p>
+                    <button onclick="stopEmergencyMode()" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-3 rounded-2xl font-semibold text-lg shadow-card transition-all">
+                        Чувствую себя лучше
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Access Panel -->
+        <div class="bg-gradient-to-r from-pastel-pink via-pastel-purple to-pastel-blue rounded-2xl p-8 mb-10 border-2 border-pink-200 shadow-soft">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">🚨 Быстрая помощь при приступе</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <button onclick="startEmergencyMode()" class="bg-red-500 hover:bg-red-600 text-white p-8 rounded-2xl text-center shadow-card transition-all hover:scale-105">
+                    <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-hand-paper text-3xl"></i>
+                    </div>
+                    <div class="font-bold text-xl mb-2">СТОП!</div>
+                    <div class="text-sm opacity-90">Остановить мысли</div>
+                </button>
+                <button onclick="showTechnique('grounding')" class="bg-blue-500 hover:bg-blue-600 text-white p-8 rounded-2xl text-center shadow-card transition-all hover:scale-105">
+                    <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-anchor text-3xl"></i>
+                    </div>
+                    <div class="font-bold text-xl mb-2">5-4-3-2-1</div>
+                    <div class="text-sm opacity-90">Заземление</div>
+                </button>
+                <button onclick="showTechnique('reality-check')" class="bg-primary hover:bg-indigo-600 text-white p-8 rounded-2xl text-center shadow-card transition-all hover:scale-105">
+                    <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-search text-3xl"></i>
+                    </div>
+                    <div class="font-bold text-xl mb-2">Проверка</div>
+                    <div class="text-sm opacity-90">Реальности</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Worksheets (3 columns) -->
+            <div class="lg:col-span-3">
+                <div id="mainContent" class="space-y-8">
+                    <!-- Worksheets Header -->
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold mb-4 text-gray-800">📋 Рабочие листы (Worksheets)</h2>
+                        <p class="text-lg text-calm-500">Выберите упражнение в зависимости от ситуации</p>
+                    </div>
+
+                    <!-- Worksheet Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Worksheet 1 -->
+                        <div class="worksheet-card border-pink-300 rounded-2xl p-8 cursor-pointer hover:shadow-soft transition-all hover:scale-105" onclick="showTechnique('thought-stopping')">
+                            <div class="sticky-note">
+                                <div class="flex items-center mb-6">
+                                    <div class="w-16 h-16 bg-red-500 rounded-2xl flex items-center justify-center mr-4 shadow-card">
+                                        <i class="fas fa-stop-circle text-white text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-xl text-gray-800">Лист 1: СТОП</h3>
+                                        <p class="text-sm text-gray-600 font-medium">Осознанное отстранение</p>
+                                    </div>
+                                </div>
+                                <div class="bg-red-50 rounded-xl p-4 mb-4">
+                                    <p class="text-gray-700 font-medium">Купирование острого кризиса через заземление и валидацию эмоций</p>
+                                </div>
+                                <div class="flex items-center justify-between text-sm text-gray-500">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-clock mr-2"></i>
+                                        <span>5-10 минут</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-star mr-1 text-yellow-500"></i>
+                                        <span>Базовое</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Worksheet 2 -->
+                        <div class="worksheet-card border-blue-300 rounded-2xl p-8 cursor-pointer hover:shadow-soft transition-all hover:scale-105" onclick="showTechnique('cognitive-restructuring')">
+                            <div class="sticky-note">
+                                <div class="flex items-center mb-6">
+                                    <div class="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mr-4 shadow-card">
+                                        <i class="fas fa-brain text-white text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-xl text-gray-800">Лист 2: Детектор мыслей</h3>
+                                        <p class="text-sm text-gray-600 font-medium">Проверка прокурора</p>
+                                    </div>
+                                </div>
+                                <div class="bg-blue-50 rounded-xl p-4 mb-4">
+                                    <p class="text-gray-700 font-medium">Деконструкция автоматических негативных мыслей (АНМ) и когнитивных искажений</p>
+                                </div>
+                                <div class="flex items-center justify-between text-sm text-gray-500">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-clock mr-2"></i>
+                                        <span>10-15 минут</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-star mr-1 text-yellow-500"></i>
+                                        <span>Средний</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Worksheet 3 -->
+                        <div class="worksheet-card border-green-300 rounded-2xl p-8 cursor-pointer hover:shadow-soft transition-all hover:scale-105" onclick="showTechnique('evolutionary-understanding')">
+                            <div class="sticky-note">
+                                <div class="flex items-center mb-6">
+                                    <div class="w-16 h-16 bg-green-500 rounded-2xl flex items-center justify-center mr-4 shadow-card">
+                                        <i class="fas fa-balance-scale text-white text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-xl text-gray-800">Лист 3: Правила жизни</h3>
+                                        <p class="text-sm text-gray-600 font-medium">Двойные стандарты</p>
+                                    </div>
+                                </div>
+                                <div class="bg-green-50 rounded-xl p-4 mb-4">
+                                    <p class="text-gray-700 font-medium">Работа с ретроспективной ревностью и иллюзиями чистоты</p>
+                                </div>
+                                <div class="flex items-center justify-between text-sm text-gray-500">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-clock mr-2"></i>
+                                        <span>15-20 минут</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-star mr-1 text-yellow-500"></i>
+                                        <span>Продвинутый</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Worksheet 4 -->
+                        <div class="worksheet-card border-purple-300 rounded-2xl p-8 cursor-pointer hover:shadow-soft transition-all hover:scale-105" onclick="showTechnique('journal')">
+                            <div class="sticky-note">
+                                <div class="flex items-center mb-6">
+                                    <div class="w-16 h-16 bg-purple-500 rounded-2xl flex items-center justify-center mr-4 shadow-card">
+                                        <i class="fas fa-clock text-white text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-xl text-gray-800">Лист 4: Скука и ресурсы</h3>
+                                        <p class="text-sm text-gray-600 font-medium">Управление неопределенностью</p>
+                                    </div>
+                                </div>
+                                <div class="bg-purple-50 rounded-xl p-4 mb-4">
+                                    <p class="text-gray-700 font-medium">Планирование руминации и активация позитивных ресурсов</p>
+                                </div>
+                                <div class="flex items-center justify-between text-sm text-gray-500">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-clock mr-2"></i>
+                                        <span>20-30 минут</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-star mr-1 text-yellow-500"></i>
+                                        <span>Терапевтический</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Technique Content -->
+                    <div id="techniqueContent" class="hidden note-style rounded-2xl p-8 fade-in">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 id="techniqueTitle" class="text-2xl font-bold text-gray-800"></h2>
+                            <button onclick="closeTechnique()" class="w-10 h-10 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center transition-colors">
+                                <i class="fas fa-times text-gray-600"></i>
+                            </button>
+                        </div>
+                        <div id="techniqueBody"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar (1 column) -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Mood Tracker -->
+                <div class="note-style rounded-2xl p-6 shadow-soft sticky-note">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-accent rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-chart-line text-white text-sm"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-800">📊 Мой трекер</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="bg-yellow-50 rounded-xl p-4">
+                            <label class="block text-sm font-medium mb-3 text-gray-700">Уровень ревности (1-10)</label>
+                            <input type="range" min="1" max="10" value="5" id="jealousyLevel" class="w-full accent-accent h-2" onchange="updateMoodDisplay()">
+                            <div class="flex justify-between text-sm text-gray-500 mt-2">
+                                <span>😌 Спокойно</span>
+                                <span id="currentLevel" class="font-bold text-accent bg-yellow-100 px-2 py-1 rounded-full">5</span>
+                                <span>😰 Сильно</span>
+                            </div>
+                        </div>
+                        <div class="bg-orange-50 rounded-xl p-4">
+                            <label class="block text-sm font-medium mb-3 text-gray-700">Основная эмоция</label>
+                            <select id="primaryEmotion" class="w-full p-3 border-2 border-orange-200 rounded-xl bg-white text-base focus:ring-2 focus:ring-accent focus:border-transparent">
+                                <option value="jealousy">😔 Ревность</option>
+                                <option value="fear">😨 Страх</option>
+                                <option value="anger">😠 Гнев</option>
+                                <option value="sadness">😢 Грусть</option>
+                                <option value="anxiety">😰 Тревога</option>
+                            </select>
+                        </div>
+                        <button onclick="saveMoodEntry()" class="w-full bg-accent hover:bg-yellow-500 text-white py-3 rounded-xl font-semibold transition-colors shadow-card">
+                            Сохранить запись
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Tips -->
+                <div class="note-style rounded-2xl p-6 shadow-soft sticky-note">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-lightbulb text-white text-sm"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-800">💡 Помните</h3>
+                    </div>
+                    <div class="space-y-3 text-sm">
+                        <div class="bg-green-50 rounded-lg p-3 flex items-start">
+                            <span class="text-xl mr-3">🧬</span>
+                            <p class="text-gray-700 font-medium">Ревность - эволюционная эмоция, она нормальна</p>
+                        </div>
+                        <div class="bg-blue-50 rounded-lg p-3 flex items-start">
+                            <span class="text-xl mr-3">🧠</span>
+                            <p class="text-gray-700 font-medium">Мысли не равны фактам</p>
+                        </div>
+                        <div class="bg-pink-50 rounded-lg p-3 flex items-start">
+                            <span class="text-xl mr-3">🌱</span>
+                            <p class="text-gray-700 font-medium">Дыхание помогает успокоиться</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress -->
+                <div class="note-style rounded-2xl p-6 shadow-soft sticky-note">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-trophy text-white text-sm"></i>
+                            </div>
+                            <h3 class="font-bold text-gray-800">🏆 Прогресс сегодня</h3>
+                        </div>
+                        <button onclick="resetProgress()" class="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 transition-colors">
+                            🔄 Сброс
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="bg-purple-50 rounded-xl p-4">
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-gray-700 font-medium">📝 Упражнения</span>
+                                <span id="exerciseCount" class="font-bold text-purple-600">0/4</span>
+                            </div>
+                            <div class="w-full bg-purple-200 rounded-full h-3">
+                                <div id="exerciseProgress" class="progress-bar bg-gradient-to-r from-purple-500 to-primary h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                            <div class="text-xs text-gray-600 mt-2">
+                                <div class="grid grid-cols-2 gap-1">
+                                    <span id="progress-stop" data-progress-key="stop" data-label="СТОП-техника" data-complete-class="text-green-600" class="text-gray-400">• СТОП-техника</span>
+                                    <span id="progress-grounding" data-progress-key="grounding" data-label="Заземление 5-4-3-2-1" data-complete-class="text-green-600" class="text-gray-400">• Заземление 5-4-3-2-1</span>
+                                    <span id="progress-reality" data-progress-key="reality" data-label="Проверка реальности" data-complete-class="text-green-600" class="text-gray-400">• Проверка реальности</span>
+                                    <span id="progress-boredom" data-progress-key="boredom" data-label="Техника скуки" data-complete-class="text-green-600" class="text-gray-400">• Техника скуки</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-green-50 rounded-xl p-4">
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-gray-700 font-medium">📖 Записи</span>
+                                <span id="journalCount" class="font-bold text-green-600">0/3</span>
+                            </div>
+                            <div class="w-full bg-green-200 rounded-full h-3">
+                                <div id="journalProgress" class="progress-bar bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                            <div class="text-xs text-gray-600 mt-2">
+                                <div class="grid grid-cols-1 gap-1">
+                                    <span id="record-mood" data-progress-key="mood" data-label="Трекер настроения" data-complete-class="text-blue-600" class="text-gray-400">• Трекер настроения</span>
+                                    <span id="record-worksheet" data-progress-key="worksheet" data-label="Рабочие листы" data-complete-class="text-blue-600" class="text-gray-400">• Рабочие листы</span>
+                                    <span id="record-plan" data-progress-key="plan" data-label="Дневник эмоций" data-complete-class="text-blue-600" class="text-gray-400">• Дневник эмоций</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="achievementBadge" class="hidden bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-xl p-3 text-center">
+                            <div class="text-2xl mb-1">🏆</div>
+                            <div class="text-sm font-bold text-yellow-900">Сегодняшняя цель достигнута!</div>
+                            <div class="text-xs text-yellow-800">Отличная работа над собой!</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Modal -->
+    <div id="customModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="note-style rounded-2xl p-8 shadow-soft max-w-md w-full mx-4">
+            <div class="flex items-center justify-between mb-6">
+                <h3 id="modalTitle" class="text-xl font-bold text-gray-800"></h3>
+                <button onclick="closeModal()" class="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center transition-colors">
+                    <i class="fas fa-times text-gray-600"></i>
+                </button>
+            </div>
+            <div id="modalBody" class="mb-6"></div>
+            <div class="flex justify-end">
+                <button onclick="closeModal()" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-semibold transition-colors">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme detection
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+
+        // Progress tracking
+        let progressMilestones = {
+            exercises: {
+                stop: false,
+                grounding: false,
+                reality: false,
+                boredom: false
+            },
+            journal: {
+                mood: false,
+                worksheet: false,
+                plan: false
+            }
+        };
+
+        const exerciseIndicatorMap = {
+            stop: 'progress-stop',
+            grounding: 'progress-grounding',
+            reality: 'progress-reality',
+            boredom: 'progress-boredom'
+        };
+
+        const journalIndicatorMap = {
+            mood: 'record-mood',
+            worksheet: 'record-worksheet',
+            plan: 'record-plan'
+        };
+
+        function updateProgress() {
+            const exercisesCompleted = Object.values(progressMilestones.exercises).filter(Boolean).length;
+            const journalCompleted = Object.values(progressMilestones.journal).filter(Boolean).length;
+
+            document.getElementById('exerciseCount').textContent = `${exercisesCompleted}/4`;
+            document.getElementById('journalCount').textContent = `${journalCompleted}/3`;
+            document.getElementById('exerciseProgress').style.width = `${(exercisesCompleted / 4) * 100}%`;
+            document.getElementById('journalProgress').style.width = `${(journalCompleted / 3) * 100}%`;
+
+            if (exercisesCompleted >= 4 && journalCompleted >= 3) {
+                document.getElementById('achievementBadge').classList.remove('hidden');
+            } else {
+                document.getElementById('achievementBadge').classList.add('hidden');
+            }
+
+            updateProgressDisplay();
+        }
+
+        function updateProgressDisplay() {
+            Object.entries(exerciseIndicatorMap).forEach(([key, elementId]) => {
+                const element = document.getElementById(elementId);
+                if (!element) return;
+                reflectProgressState(element, progressMilestones.exercises[key]);
+            });
+
+            Object.entries(journalIndicatorMap).forEach(([key, elementId]) => {
+                const element = document.getElementById(elementId);
+                if (!element) return;
+                reflectProgressState(element, progressMilestones.journal[key]);
+            });
+        }
+
+        function reflectProgressState(element, completed) {
+            const baseLabel = element.dataset.label;
+            const completeClass = element.dataset.completeClass || '';
+            const classListToToggle = completeClass.split(' ').filter(Boolean);
+
+            if (completed) {
+                element.textContent = `✅ ${baseLabel}`;
+                element.classList.add('font-semibold');
+                element.classList.remove('text-gray-400');
+                classListToToggle.forEach(cls => element.classList.add(cls));
+            } else {
+                element.textContent = `• ${baseLabel}`;
+                element.classList.remove('font-semibold');
+                classListToToggle.forEach(cls => element.classList.remove(cls));
+                if (!element.classList.contains('text-gray-400')) {
+                    element.classList.add('text-gray-400');
+                }
+            }
+        }
+
+        function mapExerciseType(type) {
+            switch (type) {
+                case 'thought-stopping':
+                case 'stop':
+                    return 'stop';
+                case 'grounding':
+                    return 'grounding';
+                case 'reality-check':
+                case 'cognitive-restructuring':
+                    return 'reality';
+                case 'habituation':
+                    return 'boredom';
+                default:
+                    console.warn('Неизвестный тип упражнения:', type);
+                    return null;
+            }
+        }
+
+        function mapJournalType(type) {
+            switch (type) {
+                case 'mood-tracker':
+                    return 'mood';
+                case 'worksheet':
+                    return 'worksheet';
+                case 'management-plan':
+                    return 'plan';
+                default:
+                    console.warn('Неизвестный тип записи:', type);
+                    return null;
+            }
+        }
+
+        function completeExercise(type) {
+            const key = mapExerciseType(type);
+            if (!key) {
+                return false;
+            }
+
+            if (progressMilestones.exercises[key]) {
+                return false;
+            }
+
+            progressMilestones.exercises[key] = true;
+            updateProgress();
+            return true;
+        }
+
+        function completeJournal(type) {
+            const key = mapJournalType(type);
+            if (!key) {
+                return false;
+            }
+
+            if (progressMilestones.journal[key]) {
+                return false;
+            }
+
+            progressMilestones.journal[key] = true;
+            updateProgress();
+            return true;
+        }
+
+        function celebrateExerciseCompletion(customTitle, customMessage) {
+            const messages = [
+                'Отличная работа! 🌟',
+                'Вы движетесь в правильном направлении! 💪',
+                'Каждое упражнение делает вас сильнее! 🚀',
+                'Продолжайте практиковать эти техники! ✨'
+            ];
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            showModal(customTitle || 'Упражнение завершено! 🎉', customMessage || randomMessage);
+        }
+
+        function showAlreadyCountedModal() {
+            showModal('Уже зачтено', 'Эта активность уже учтена в прогрессе. Попробуйте другое упражнение или перейдите к следующему шагу.');
+        }
+
+        function resetProgress() {
+            if (!confirm('Сбросить прогресс? Вы уверены, что хотите обнулить все сегодняшние достижения?')) {
+                return;
+            }
+
+            progressMilestones = {
+                exercises: { stop: false, grounding: false, reality: false, boredom: false },
+                journal: { mood: false, worksheet: false, plan: false }
+            };
+
+            updateProgress();
+            showModal('Прогресс сброшен', 'Счетчики обнулены. Можно начать заново и закрепить навыки! 💪');
+        }
+
+        // Emergency mode
+        let breathingInterval;
+
+        function startEmergencyMode() {
+            document.getElementById('emergencyMode').classList.remove('hidden');
+            document.getElementById('emergencyMode').scrollIntoView({ behavior: 'smooth' });
+
+            let isInhale = true;
+            const breatheText = document.getElementById('breatheText');
+
+            breathingInterval = setInterval(() => {
+                breatheText.textContent = isInhale ? 'Выдох' : 'Вдох';
+                isInhale = !isInhale;
+            }, 4000);
+        }
+
+        function stopEmergencyMode() {
+            document.getElementById('emergencyMode').classList.add('hidden');
+            if (breathingInterval) {
+                clearInterval(breathingInterval);
+                breathingInterval = null;
+            }
+        }
+
+        // Techniques
+        const techniques = {
+            'thought-stopping': {
+                title: '📝 Лист 1: СТОП - Осознанное отстранение',
+                content: `
+                    <div class="space-y-6">
+                        <div class="bg-pink-50 border-l-4 border-pink-400 p-6 rounded-r-xl">
+                            <h4 class="font-bold mb-3 text-pink-800">🎯 Цель упражнения:</h4>
+                            <p class="text-pink-700">Прервать "Эмоциональный Захват" и создать дистанцию между мыслью, чувством и деструктивным действием.</p>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-6 border-2 border-gray-200">
+                            <h4 class="font-bold mb-4 text-gray-800">Фаза А: Остановка (STOP) и Валидация</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Что я сейчас чувствую?</label>
+                                    <textarea class="w-full p-3 border-2 border-gray-300 rounded-xl bg-gray-50 text-base" rows="2" placeholder="Тревога, гнев, беспомощность..."></textarea>
+                                </div>
+                                <div class="bg-blue-50 p-4 rounded-lg">
+                                    <p class="text-sm text-blue-800"><strong>Самосострадание:</strong> "Я имею право на эти чувства. Они показывают, что отношения важны для меня."</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-6 border-2 border-gray-200">
+                            <h4 class="font-bold mb-4 text-gray-800">Фаза Б: Заземление 5-4-3-2-1</h4>
+                            <div class="grid grid-cols-1 gap-3">
+                                <div class="flex items-center p-3 bg-blue-50 rounded-lg">
+                                    <span class="bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">5</span>
+                                    <input type="text" class="flex-1 p-2 border border-blue-200 rounded" placeholder="5 вещей, которые я ВИЖУ">
+                                </div>
+                                <div class="flex items-center p-3 bg-green-50 rounded-lg">
+                                    <span class="bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">4</span>
+                                    <input type="text" class="flex-1 p-2 border border-green-200 rounded" placeholder="4 вещи, которые могу ПОТРОГАТЬ">
+                                </div>
+                                <div class="flex items-center p-3 bg-yellow-50 rounded-lg">
+                                    <span class="bg-yellow-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">3</span>
+                                    <input type="text" class="flex-1 p-2 border border-yellow-200 rounded" placeholder="3 звука, которые СЛЫШУ">
+                                </div>
+                                <div class="flex items-center p-3 bg-orange-50 rounded-lg">
+                                    <span class="bg-orange-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">2</span>
+                                    <input type="text" class="flex-1 p-2 border border-orange-200 rounded" placeholder="2 запаха, которые ЧУВСТВУЮ">
+                                </div>
+                                <div class="flex items-center p-3 bg-red-50 rounded-lg">
+                                    <span class="bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">1</span>
+                                    <input type="text" class="flex-1 p-2 border border-red-200 rounded" placeholder="1 вкус во РТУ">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            <button id="thoughtStopButton" class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-card transition-all">
+                                ✋ СТОП! Я справляюсь
+                            </button>
+                        </div>
+                    </div>
+                `
+            },
+            'grounding': {
+                title: '⚓ Техника заземления 5-4-3-2-1',
+                content: `
+                    <div class="space-y-4">
+                        <p class="text-gray-700 text-lg">Эта техника поможет вернуться в настоящий момент и прервать навязчивые мысли:</p>
+                        <div class="space-y-3">
+                            <div class="flex items-center p-4 bg-blue-50 rounded-xl">
+                                <span class="bg-blue-500 text-white w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold mr-4">5</span>
+                                <span class="text-lg">Назовите 5 вещей, которые вы <strong>видите</strong></span>
+                            </div>
+                            <div class="flex items-center p-4 bg-green-50 rounded-xl">
+                                <span class="bg-green-500 text-white w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold mr-4">4</span>
+                                <span class="text-lg">Назовите 4 вещи, которые можете <strong>потрогать</strong></span>
+                            </div>
+                            <div class="flex items-center p-4 bg-yellow-50 rounded-xl">
+                                <span class="bg-yellow-500 text-white w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold mr-4">3</span>
+                                <span class="text-lg">Назовите 3 звука, которые <strong>слышите</strong></span>
+                            </div>
+                            <div class="flex items-center p-4 bg-orange-50 rounded-xl">
+                                <span class="bg-orange-500 text-white w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold mr-4">2</span>
+                                <span class="text-lg">Назовите 2 запаха, которые <strong>чувствуете</strong></span>
+                            </div>
+                            <div class="flex items-center p-4 bg-red-50 rounded-xl">
+                                <span class="bg-red-500 text-white w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold mr-4">1</span>
+                                <span class="text-lg">Назовите 1 вкус во <strong>рту</strong></span>
+                            </div>
+                        </div>
+                        <button id="groundingComplete" class="w-full bg-primary hover:bg-indigo-600 text-white py-3 rounded-xl font-semibold text-lg shadow-card transition-colors">
+                            ✅ Упражнение выполнено
+                        </button>
+                    </div>
+                `
+            },
+            'reality-check': {
+                title: '🔍 Проверка реальности',
+                content: `
+                    <div class="space-y-6">
+                        <div class="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-r-xl">
+                            <h4 class="font-bold mb-3 text-blue-800">🎯 Цель:</h4>
+                            <p class="text-blue-700">Отделить факты от предположений и найти альтернативные объяснения.</p>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="bg-white rounded-xl p-6 border-2 border-green-200">
+                                <h4 class="font-bold mb-3 text-green-800">1. ✅ Какие у меня есть ФАКТЫ?</h4>
+                                <textarea class="w-full p-3 border-2 border-green-300 rounded-xl bg-green-50 text-base" rows="3" placeholder="Только проверенные, объективные факты. Что я действительно видел/слышал?"></textarea>
+                            </div>
+
+                            <div class="bg-white rounded-xl p-6 border-2 border-red-200">
+                                <h4 class="font-bold mb-3 text-red-800">2. ❓ Что я ДОМЫСЛИВАЮ?</h4>
+                                <textarea class="w-full p-3 border-2 border-red-300 rounded-xl bg-red-50 text-base" rows="3" placeholder="Какие предположения и интерпретации я делаю?"></textarea>
+                            </div>
+
+                            <div class="bg-white rounded-xl p-6 border-2 border-purple-200">
+                                <h4 class="font-bold mb-3 text-purple-800">3. 🔄 Альтернативное объяснение?</h4>
+                                <textarea class="w-full p-3 border-2 border-purple-300 rounded-xl bg-purple-50 text-base" rows="3" placeholder="Как это может объяснить незаинтересованный наблюдатель?"></textarea>
+                            </div>
+
+                            <div class="bg-white rounded-xl p-6 border-2 border-orange-200">
+                                <h4 class="font-bold mb-3 text-orange-800">4. 💰 Цена этой мысли?</h4>
+                                <textarea class="w-full p-3 border-2 border-orange-300 rounded-xl bg-orange-50 text-base" rows="2" placeholder="Что происходит, когда я продолжаю верить этой мысли?"></textarea>
+                            </div>
+                        </div>
+
+                        <button id="realityCheckComplete" class="w-full bg-primary hover:bg-indigo-600 text-white py-3 rounded-xl font-semibold text-lg shadow-card transition-colors">
+                            💾 Сохранить анализ
+                        </button>
+                    </div>
+                `
+            },
+            'evolutionary-understanding': {
+                title: '⚖️ Лист 3: Правила жизни - Детектор двойных стандартов',
+                content: `
+                    <div class="space-y-6">
+                        <div class="bg-green-50 border-l-4 border-green-400 p-6 rounded-r-xl">
+                            <h4 class="font-bold mb-3 text-green-800">🎯 Цель упражнения:</h4>
+                            <p class="text-green-700">Выявить жёсткие "Книги Правил" и "Иллюзии Чистоты", которые требуют от партнёра невозможного совершенства.</p>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-6 border-2 border-gray-200">
+                            <h4 class="font-bold mb-4 text-gray-800">Шаг 1: Мое жёсткое правило</h4>
+                            <p class="text-sm text-gray-600 mb-3">Сформулируйте правило в формате: "Если [негативное ожидание], то [что это означает]"</p>
+                            <textarea class="w-full p-3 border-2 border-gray-300 rounded-xl bg-gray-50 text-base" rows="2" placeholder='Например: "Если он находит других привлекательными, то он меня не любит/обязательно изменит"'></textarea>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-6 border-2 border-yellow-200">
+                            <h4 class="font-bold mb-4 text-yellow-800">Шаг 2: Тест на двойной стандарт</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Нахожу ли я когда-либо других людей привлекательными?</label>
+                                    <select class="w-full p-3 border-2 border-yellow-300 rounded-xl bg-yellow-50 text-base">
+                                        <option value="">Выберите ответ</option>
+                                        <option value="yes">Да, иногда это происходит</option>
+                                        <option value="no">Нет, никогда</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Значит ли это, что я автоматически предам партнёра?</label>
+                                    <select class="w-full p-3 border-2 border-yellow-300 rounded-xl bg-yellow-50 text-base">
+                                        <option value="">Выберите ответ</option>
+                                        <option value="no">Нет, это не означает предательства</option>
+                                        <option value="yes">Да, это признак неверности</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="bg-yellow-100 p-4 rounded-lg mt-4">
+                                <p class="text-sm text-yellow-800"><strong>Вывод:</strong> Если вы не можете соответствовать этому стандарту, почему его должен соблюдать партнёр?</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-6 border-2 border-blue-200">
+                            <h4 class="font-bold mb-4 text-blue-800">Шаг 3: Корневое убеждение</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Если бы худшее случилось (измена/уход), что бы это означало ОБО МНЕ?</label>
+                                    <textarea class="w-full p-3 border-2 border-blue-300 rounded-xl bg-blue-50 text-base" rows="2" placeholder='Например: "Я неудачница", "Я недостойна любви"'></textarea>
+                                </div>
+                                <div class="bg-blue-100 p-4 rounded-lg">
+                                    <p class="text-sm text-blue-800"><strong>Рационализация:</strong> Если кто-то лжёт и изменяет, это говорит о его характере и выборе, а не о вашей ценности.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-6 border-2 border-purple-200">
+                            <h4 class="font-bold mb-4 text-purple-800">Шаг 4: Новое гибкое правило</h4>
+                            <textarea class="w-full p-3 border-2 border-purple-300 rounded-xl bg-purple-50 text-base" rows="3" placeholder="Создайте новое правило, которое допускает человеческую природу, но сохраняет фокус на приверженности отношениям"></textarea>
+                        </div>
+
+                        <button id="evolutionComplete" class="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl font-semibold text-lg shadow-card transition-colors">
+                            ✅ Завершить переосмысление
+                        </button>
+                    </div>
+                `
+            },
+            'cognitive-restructuring': {
+                title: '🧠 Лист 2: Детектор мыслей - Проверка прокурора',
+                content: `
+                    <div class="space-y-6">
+                        <div class="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-r-xl">
+                            <h4 class="font-bold mb-3 text-blue-800">🎯 Цель упражнения:</h4>
+                            <p class="text-blue-700">Изолировать и оспорить предвзятые суждения, вызванные травмой, чтобы найти Рациональный Ответ.</p>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-6 border-2 border-gray-200">
+                            <h4 class="font-bold mb-4 text-gray-800">Шаг 1: Идентификация</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Ситуация-триггер</label>
+                                    <textarea class="w-full p-3 border-2 border-gray-300 rounded-xl bg-gray-50 text-base" rows="2" placeholder="Что именно произошло? Опишите факты..."></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Автоматическая Негативная Мысль (АНМ)</label>
+                                    <textarea class="w-full p-3 border-2 border-red-300 rounded-xl bg-red-50 text-base" rows="2" placeholder="Первая мысль, которая пришла в голову..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-6 border-2 border-orange-200">
+                            <h4 class="font-bold mb-4 text-orange-800">Шаг 2: Распознавание когнитивных искажений</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <label class="flex items-center p-3 bg-orange-50 rounded-lg cursor-pointer">
+                                    <input type="checkbox" class="mr-3">
+                                    <span class="text-sm">📖 Чтение мыслей</span>
+                                </label>
+                                <label class="flex items-center p-3 bg-orange-50 rounded-lg cursor-pointer">
+                                    <input type="checkbox" class="mr-3">
+                                    <span class="text-sm">🔮 Предсказание будущего</span>
+                                </label>
+                                <label class="flex items-center p-3 bg-orange-50 rounded-lg cursor-pointer">
+                                    <input type="checkbox" class="mr-3">
+                                    <span class="text-sm">😱 Катастрофизация</span>
+                                </label>
+                                <label class="flex items-center p-3 bg-orange-50 rounded-lg cursor-pointer">
+                                    <input type="checkbox" class="mr-3">
+                                    <span class="text-sm">👤 Персонализация</span>
+                                </label>
+                                <label class="flex items-center p-3 bg-orange-50 rounded-lg cursor-pointer">
+                                    <input type="checkbox" class="mr-3">
+                                    <span class="text-sm">❌ Обесценивание позитива</span>
+                                </label>
+                                <label class="flex items-center p-3 bg-orange-50 rounded-lg cursor-pointer">
+                                    <input type="checkbox" class="mr-3">
+                                    <span class="text-sm">⚫ Чёрно-белое мышление</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-6 border-2 border-green-200">
+                            <h4 class="font-bold mb-4 text-green-800">Шаг 3: Проверка фактами</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">✅ Доказательства "ЗА" мою мысль</label>
+                                    <textarea class="w-full p-3 border-2 border-green-300 rounded-xl bg-green-50 text-base" rows="2" placeholder="Только объективные факты, которые поддерживают мою мысль..."></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">❌ Доказательства "ПРОТИВ" моей мысли</label>
+                                    <textarea class="w-full p-3 border-2 border-green-300 rounded-xl bg-green-50 text-base" rows="2" placeholder="Факты и позитивные поступки партнёра, которые противоречат моей мысли..."></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">💰 Цена этого мышления</label>
+                                    <textarea class="w-full p-3 border-2 border-green-300 rounded-xl bg-green-50 text-base" rows="2" placeholder="Какова цена того, чтобы продолжать верить этой мысли?"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-6 border-2 border-purple-200">
+                            <h4 class="font-bold mb-4 text-purple-800">Шаг 4: Рациональный ответ</h4>
+                            <textarea class="w-full p-3 border-2 border-purple-300 rounded-xl bg-purple-50 text-base" rows="3" placeholder="Сбалансированная, реалистичная мысль, основанная на фактах..."></textarea>
+                        </div>
+
+                        <button id="cognitiveComplete" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl font-semibold text-lg shadow-card transition-colors">
+                            💾 Сохранить рациональный ответ
+                        </button>
+                    </div>
+                `
+            },
+            'journal': {
+                title: '⏰ Лист 4: Скука и ресурсы - Управление неопределённостью',
+                content: `
+                    <div class="space-y-6">
+                        <div class="bg-purple-50 border-l-4 border-purple-400 p-6 rounded-r-xl">
+                            <h4 class="font-bold mb-3 text-purple-800">🎯 Цель упражнения:</h4>
+                            <p class="text-purple-700">Снизить непереносимость неопределённости и переключить внимание с разрушительной руминации на созидательные аспекты жизни.</p>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-6 border-2 border-orange-200">
+                            <h4 class="font-bold mb-4 text-orange-800">Шаг 1: Планирование руминации</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Время для "работы" с ревностью (20 минут в день)</label>
+                                    <input type="time" class="w-full p-3 border-2 border-orange-300 rounded-xl bg-orange-50 text-base">
+                                </div>
+                                <div class="bg-orange-100 p-4 rounded-lg">
+                                    <p class="text-sm text-orange-800"><strong>Правило:</strong> Если мысль о ревности появляется в другое время, запишите её и скажите: "Я займусь этим в [назначенное время]"</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Блокнот для отложенных мыслей</label>
+                                    <textarea class="w-full p-3 border-2 border-orange-300 rounded-xl bg-orange-50 text-base" rows="3" placeholder="Записывайте сюда мысли, которые приходят не в назначенное время..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-6 border-2 border-red-200">
+                            <h4 class="font-bold mb-4 text-red-800">Шаг 2: Техника "Скуки" (Habituation)</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Самая мучительная фраза/мысль</label>
+                                    <textarea class="w-full p-3 border-2 border-red-300 rounded-xl bg-red-50 text-base" rows="2" placeholder="Запишите самую болезненную мысль о ревности..."></textarea>
+                                </div>
+                                <div class="bg-red-100 p-4 rounded-lg">
+                                    <p class="text-sm text-red-800"><strong>Инструкция:</strong> Повторяйте эту фразу медленно в течение 15 минут. Цель — достичь "прорыва скуки", чтобы мысль потеряла эмоциональный отклик.</p>
+                                </div>
+                                <button id="habituationTimer" class="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-semibold">
+                                    ⏱️ Начать 15-минутный таймер
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-6 border-2 border-green-200">
+                            <h4 class="font-bold mb-4 text-green-800">Шаг 3: Активация ресурсов (Сферы удовлетворённости)</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Сферы жизни, которыми я УДОВЛЕТВОРЕНА</label>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <label class="flex items-center p-3 bg-green-50 rounded-lg cursor-pointer">
+                                            <input type="checkbox" class="mr-3">
+                                            <span class="text-sm">💼 Работа/карьера</span>
+                                        </label>
+                                        <label class="flex items-center p-3 bg-green-50 rounded-lg cursor-pointer">
+                                            <input type="checkbox" class="mr-3">
+                                            <span class="text-sm">👥 Дружба</span>
+                                        </label>
+                                        <label class="flex items-center p-3 bg-green-50 rounded-lg cursor-pointer">
+                                            <input type="checkbox" class="mr-3">
+                                            <span class="text-sm">🏃 Здоровье</span>
+                                        </label>
+                                        <label class="flex items-center p-3 bg-green-50 rounded-lg cursor-pointer">
+                                            <input type="checkbox" class="mr-3">
+                                            <span class="text-sm">🎨 Хобби</span>
+                                        </label>
+                                        <label class="flex items-center p-3 bg-green-50 rounded-lg cursor-pointer">
+                                            <input type="checkbox" class="mr-3">
+                                            <span class="text-sm">👪 Семья</span>
+                                        </label>
+                                        <label class="flex items-center p-3 bg-green-50 rounded-lg cursor-pointer">
+                                            <input type="checkbox" class="mr-3">
+                                            <span class="text-sm">🏠 Дом/быт</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">План извлечения радости на сегодня</label>
+                                    <textarea class="w-full p-3 border-2 border-green-300 rounded-xl bg-green-50 text-base" rows="3" placeholder="Как я могу максимально насладиться позитивными моментами? (посмотреть фильм с партнёром, насладиться видом из окна, встретиться с подругой...)"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="journalComplete" class="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-xl font-semibold text-lg shadow-card transition-colors">
+                            💾 Сохранить план управления
+                        </button>
+                    </div>
+                `
+            }
+        };
+
+        function showTechnique(techniqueId) {
+            const technique = techniques[techniqueId];
+            if (technique) {
+                document.getElementById('techniqueTitle').innerHTML = technique.title;
+                document.getElementById('techniqueBody').innerHTML = technique.content;
+                document.getElementById('techniqueContent').classList.remove('hidden');
+                document.getElementById('techniqueContent').classList.add('fade-in');
+                document.getElementById('techniqueContent').scrollIntoView({ behavior: 'smooth' });
+
+                initializeEventHandlers();
+            } else {
+                console.error('Техника не найдена:', techniqueId);
+            }
+        }
+
+        function initializeEventHandlers() {
+            const thoughtStopButton = document.getElementById('thoughtStopButton');
+            if (thoughtStopButton) {
+                thoughtStopButton.addEventListener('click', () => {
+                    if (completeExercise('thought-stopping')) {
+                        celebrateExerciseCompletion('Отлично! 🎉', 'Вы успешно прервали навязчивую мысль. Теперь сосредоточьтесь на своём дыхании и окружении.');
+                    } else {
+                        showAlreadyCountedModal();
+                    }
+                });
+            }
+
+            const groundingButton = document.getElementById('groundingComplete');
+            if (groundingButton) {
+                groundingButton.addEventListener('click', () => {
+                    if (completeExercise('grounding')) {
+                        celebrateExerciseCompletion();
+                    } else {
+                        showAlreadyCountedModal();
+                    }
+                });
+            }
+
+            const realityCheckButton = document.getElementById('realityCheckComplete');
+            if (realityCheckButton) {
+                realityCheckButton.addEventListener('click', () => {
+                    const exerciseNew = completeExercise('reality-check');
+                    const journalNew = completeJournal('worksheet');
+                    if (exerciseNew || journalNew) {
+                        showModal('Анализ сохранён! 💾', 'Вы отделили факты от предположений и сохранили запись для будущей работы.');
+                    } else {
+                        showAlreadyCountedModal();
+                    }
+                });
+            }
+
+            const evolutionButton = document.getElementById('evolutionComplete');
+            if (evolutionButton) {
+                evolutionButton.addEventListener('click', () => {
+                    const exerciseNew = completeExercise('reality-check');
+                    const journalNew = completeJournal('worksheet');
+                    if (exerciseNew || journalNew) {
+                        showModal('Переосмысление сохранено! 💾', 'Вы переписали жёсткое правило и зафиксировали новое гибкое убеждение.');
+                    } else {
+                        showAlreadyCountedModal();
+                    }
+                });
+            }
+
+            const cognitiveButton = document.getElementById('cognitiveComplete');
+            if (cognitiveButton) {
+                cognitiveButton.addEventListener('click', () => {
+                    const exerciseNew = completeExercise('cognitive-restructuring');
+                    const journalNew = completeJournal('worksheet');
+                    if (exerciseNew || journalNew) {
+                        showModal('Рациональный ответ сохранён! 💾', 'Вы нашли сбалансированную мысль и зафиксировали её как часть рабочего листа.');
+                    } else {
+                        showAlreadyCountedModal();
+                    }
+                });
+            }
+
+            const timerButton = document.getElementById('habituationTimer');
+            if (timerButton) {
+                timerButton.addEventListener('click', startHabituationTimer, { once: true });
+            }
+
+            const journalButton = document.getElementById('journalComplete');
+            if (journalButton) {
+                journalButton.addEventListener('click', () => {
+                    saveJournalEntry();
+                });
+            }
+        }
+
+        function closeTechnique() {
+            document.getElementById('techniqueContent').classList.add('hidden');
+        }
+
+        function startHabituationTimer(event) {
+            let timeLeft = 15 * 60;
+            const button = event.currentTarget;
+
+            button.disabled = true;
+            button.classList.remove('hover:bg-red-600');
+
+            const timer = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                button.textContent = `⏱️ ${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    button.textContent = '✅ Упражнение завершено';
+                    button.classList.remove('bg-red-500');
+                    button.classList.add('bg-green-500', 'hover:bg-green-600');
+                    if (completeExercise('habituation')) {
+                        celebrateExerciseCompletion('Упражнение "Скуки" завершено! 🎉', 'Отлично! Вы потратили 15 минут на обесценивание болезненной мысли. Заметили ли вы снижение эмоционального отклика?');
+                    } else {
+                        showAlreadyCountedModal();
+                    }
+                }
+
+                timeLeft--;
+            }, 1000);
+        }
+
+        function saveJournalEntry() {
+            const wasNew = completeJournal('management-plan');
+            if (wasNew) {
+                showModal('Запись сохранена! 📝', 'Ведение дневника поможет вам лучше понять свои паттерны и триггеры. Отличная работа!');
+            } else {
+                showAlreadyCountedModal();
+            }
+        }
+
+        function saveMoodEntry() {
+            const level = document.getElementById('jealousyLevel').value;
+            const emotion = document.getElementById('primaryEmotion');
+            const emotionText = emotion.options[emotion.selectedIndex].text;
+            const wasNew = completeJournal('mood-tracker');
+
+            const baseMessage = `Уровень ревности: ${level}/10<br>Основная эмоция: ${emotionText}`;
+            const suffix = wasNew
+                ? '<br><br>Отлично! Эта запись засчитана в ваш дневник.'
+                : '<br><br>Эта запись уже учитывалась ранее. Можно перейти к следующему шагу.';
+
+            showModal('Состояние записано! 📊', `${baseMessage}${suffix}`);
+        }
+
+        function updateMoodDisplay() {
+            const level = document.getElementById('jealousyLevel').value;
+            document.getElementById('currentLevel').textContent = level;
+        }
+
+        // Modal functions
+        function showModal(title, message) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalBody').innerHTML = `<p class="text-gray-700">${message}</p>`;
+            document.getElementById('customModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').classList.add('hidden');
+        }
+
+        // Initialize
+        updateProgress();
+        updateMoodDisplay();
+    </script>
+</body>
+</html>
